@@ -1,123 +1,164 @@
+import 'dart:ffi';
+import 'dart:io';
 
-
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:messaging_app/Providers/Auth_Provider.dart';
-import 'package:messaging_app/services/database.dart';
-import 'package:messaging_app/services/navigation.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
-class RegistrationPage extends StatefulWidget {
+// import '../providers/auth_provider.dart';
+import '../providers/Auth_Provider.dart';
 
+import '../services/navigation.dart';
+import '../services/media.dart';
+import '../services/cloud_storage.dart';
+import '../services/database.dart';
+import '../services/snackbar.dart';
+
+class RegistrationPage extends StatefulWidget {
   @override
   State<StatefulWidget> createState() {
     return _RegistrationPageState();
   }
 }
 
-class _RegistrationPageState extends State<RegistrationPage>{
+class _RegistrationPageState extends State<RegistrationPage> {
   late double _deviceHeight;
   late double _deviceWidth;
+
   late GlobalKey<FormState> _formKey;
   late AuthProvider _auth;
 
-  String ? _name;
+  late String _name;
+  late String _email;
+  late String _password;
+  late File _image;
 
-  String ? _email;
-  String ? _password ;
-
-  _RegistrationPageState(){
+  _RegistrationPageState() {
     _formKey = GlobalKey<FormState>();
+    _image = new File("assets/defaultDP.jpeg");
   }
 
   @override
-  Widget build(BuildContext context){
+  Widget build(BuildContext context) {
     _deviceHeight = MediaQuery.of(context).size.height;
     _deviceWidth = MediaQuery.of(context).size.width;
+
     return Scaffold(
       backgroundColor: Theme.of(context).backgroundColor,
       body: Container(
-        alignment : Alignment.center,
+        alignment: Alignment.center,
         child: ChangeNotifierProvider<AuthProvider>.value(
           value: AuthProvider.instance,
-          child: _registrationPageUI(),
+          child: registrationPageUI(),
         ),
       ),
     );
   }
 
-   Widget _registrationPageUI(){
+  Widget registrationPageUI() {
     return Builder(
-      builder:  (BuildContext _context) {
+      builder: (BuildContext _context) {
+        SnackBarService.instance.buildContext = _context;
         _auth = Provider.of<AuthProvider>(_context);
         return Container(
-          padding: EdgeInsets.symmetric(horizontal : _deviceWidth * 0.10),
-          alignment: Alignment.center,
-          child : Column(
+          height: _deviceHeight * 0.75,
+          padding: EdgeInsets.symmetric(horizontal: _deviceWidth * 0.10),
+          child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             mainAxisSize: MainAxisSize.max,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              _heading(),
+              _headingWidget(),
               _inputForm(),
               _registerButton(),
-              _backToLoginPage(),
+              _backToLoginPageButton(),
             ],
           ),
         );
       },
     );
   }
-  Widget _heading(){
+
+  Widget _headingWidget() {
     return Container(
       height: _deviceHeight * 0.12,
-      child : Column(
+      child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        mainAxisSize: MainAxisSize.max,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           Text(
-            "Please enter your details",
-            style : TextStyle(fontSize : 25, fontWeight : FontWeight.w300 )
+            "Let's get going!",
+            style: TextStyle(fontSize: 35, fontWeight: FontWeight.w700),
+          ),
+          Text(
+            "Please enter your details.",
+            style: TextStyle(fontSize: 25, fontWeight: FontWeight.w200),
           ),
         ],
-        )
+      ),
     );
   }
 
-  Widget _inputForm(){
+  Widget _inputForm() {
     return Container(
       height: _deviceHeight * 0.35,
-      child : Form(
+      child: Form(
         key: _formKey,
         onChanged: () {
           _formKey.currentState!.save();
         },
         child: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        mainAxisSize: MainAxisSize.max,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          _nameTextField(),
-          _emailTextField(),
-          _pswTextField(),
-        ],
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          mainAxisSize: MainAxisSize.max,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            // _imageSelectorWidget(),
+            _nameTextField(),
+            _emailTextField(),
+            _passwordTextField(),
+          ],
         ),
       ),
     );
   }
 
-  Widget _nameTextField(){
+  Widget _imageSelectorWidget() {
+    return Align(
+      alignment: Alignment.center,
+      child: GestureDetector(
+        onTap: () async {
+          File _imageFile = MediaService.instance.getImageFromLibrary() as File;
+          setState(() {
+            _image = _imageFile;
+          });
+        },
+        child: Container(
+          height: _deviceHeight * 0.10,
+          width: _deviceHeight * 0.10,
+          decoration: BoxDecoration(
+            color: Colors.transparent,
+            borderRadius: BorderRadius.circular(500),
+            image: DecorationImage(
+              fit: BoxFit.cover,
+              image: FileImage(_image),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _nameTextField() {
     return TextFormField(
       autocorrect: false,
       style: TextStyle(color: Colors.white),
       validator: (_input) {
-        return _input!.length != 0 
-          ? null 
-          : "Please enter your full name";
+        return _input!.length != 0 ? null : "Please enter a name";
       },
       onSaved: (_input) {
         setState(() {
-          _name = _input;
+          _name = _input!;
         });
       },
       cursorColor: Colors.white,
@@ -130,23 +171,23 @@ class _RegistrationPageState extends State<RegistrationPage>{
     );
   }
 
-  Widget _emailTextField(){
+  Widget _emailTextField() {
     return TextFormField(
       autocorrect: false,
       style: TextStyle(color: Colors.white),
       validator: (_input) {
-        return _input!.length != 0 && _input.contains("@") 
-          ? null 
-          : "Please enter a valid email";
+        return _input!.length != 0 && _input.contains("@")
+            ? null
+            : "Please enter a valid email";
       },
       onSaved: (_input) {
         setState(() {
-          _email = _input;
+          _email = _input!;
         });
       },
       cursorColor: Colors.white,
       decoration: InputDecoration(
-        hintText: "Email Address",
+        hintText: "Email",
         focusedBorder: UnderlineInputBorder(
           borderSide: BorderSide(color: Colors.white),
         ),
@@ -154,19 +195,17 @@ class _RegistrationPageState extends State<RegistrationPage>{
     );
   }
 
-  Widget _pswTextField(){
+  Widget _passwordTextField() {
     return TextFormField(
       autocorrect: false,
       obscureText: true,
       style: TextStyle(color: Colors.white),
       validator: (_input) {
-        return _input!.length != 0
-          ? null 
-          : "Please enter a password";
+        return _input!.length != 0 ? null : "Please enter a password";
       },
       onSaved: (_input) {
         setState(() {
-          _password = _input;
+          _password = _input!;
         });
       },
       cursorColor: Colors.white,
@@ -179,42 +218,53 @@ class _RegistrationPageState extends State<RegistrationPage>{
     );
   }
 
-  Widget _registerButton(){
-    return  _auth.status != AuthStatus.Authenticating 
+  Widget _registerButton() {
+    return _auth.status != AuthStatus.Authenticating
         ? Container(
             height: _deviceHeight * 0.06,
             width: _deviceWidth,
-            child: ElevatedButton(
+            child: MaterialButton(
               onPressed: () {
-                if(_formKey.currentState!.validate()) {
-                  _auth.registerUserWithEmailAndPassword(
-                  _email!, _password!, (String _uid) async {
-                    await DBService.instance.createUserInDB(_uid, _name!, _email!);
-                });
-              }
-            },
-            child: Text(
-              "REGISTER",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+                if (_formKey.currentState!.validate() && _image != null) {
+                  _auth.registerUserWithEmailAndPassword(_email, _password,
+                      (String _uid) async {
+                    var _result = await CloudStorageService.instance
+                        .uploadUserImage(_uid, _image);
+                    var _imageURL = await _result.ref.getDownloadURL();
+                    await DBService.instance
+                        .createUserInDB(_uid, _name, _email, _imageURL);
+                  });
+                }
+              },
+              color: Colors.blue,
+              child: Text(
+                "Register",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+              ),
             ),
-          ),
-        ) 
-      : Align(
-          alignment: Alignment.center,
-          child: CircularProgressIndicator(),
-        );
+          )
+        : Align(
+            alignment: Alignment.center,
+            child: CircularProgressIndicator(),
+          );
   }
 
-  Widget _backToLoginPage(){
+  Widget _backToLoginPageButton() {
     return GestureDetector(
-      onTap: (){
+      onTap: () {
         NavigationService.instance.goBack();
       },
       child: Container(
-        height: _deviceHeight * 0.06, 
-        width: _deviceWidth, 
+        height: _deviceHeight * 0.06,
+        width: _deviceWidth,
         child: Icon(Icons.arrow_back, size: 40),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(DiagnosticsProperty<File>('_image', _image));
   }
 }
