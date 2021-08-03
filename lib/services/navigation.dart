@@ -1,34 +1,28 @@
-
-import 'package:flutter/material.dart'; 
+import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
-
-class NavigationService { 
-  late GlobalKey <NavigatorState> navigatorkey;
+class NavigationService {
+  late GlobalKey<NavigatorState> navigatorKey;
 
   static NavigationService instance = NavigationService();
 
   NavigationService() {
-
-    navigatorkey = GlobalKey<NavigatorState>();
-
+    navigatorKey = GlobalKey<NavigatorState>();
   }
 
-  Future<dynamic>navigateToReplacement(String _routeName) { 
-    return navigatorkey.currentState!.pushReplacementNamed (_routeName);
-
+  Future<dynamic> navigateToReplacement(String _routeName) {
+    return navigatorKey.currentState!.pushReplacementNamed(_routeName);
   }
 
-  Future<dynamic>navigateToPage(String _routeName) { 
-    return navigatorkey.currentState!.pushNamed (_routeName);
-
+  Future<dynamic> navigateTo(String _routeName) {
+    return navigatorKey.currentState!.pushNamed(_routeName);
   }
 
-  Future<dynamic>navigateToRoute(MaterialPageRoute _route){
-    return navigatorkey.currentState!.push(_route);
+  Future<dynamic> navigateToRoute(MaterialPageRoute _route) {
+    return navigatorKey.currentState!.push(_route);
   }
 
-  void goBack(){
-    return navigatorkey.currentState!.pop();
+  void goBack() {
+    return navigatorKey.currentState!.pop();
   }
 }
