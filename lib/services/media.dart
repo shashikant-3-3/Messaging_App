@@ -4,10 +4,9 @@ import 'package:image_picker/image_picker.dart';
 
 class MediaService {
   static MediaService instance = new MediaService();
-  ImagePicker imagePicker = new ImagePicker();
+  static ImagePicker imagePicker = new ImagePicker();
 
-  Future<File> getImageFromLibrary() async {
-    // ImagePicker imagePicker = ImagePicker();
-    return await imagePicker.pickImage(source: ImageSource.gallery) as File;
+  Future<dynamic> getImageFromLibrary() async {
+    return await imagePicker.pickImage(source: ImageSource.gallery);
   }
 }

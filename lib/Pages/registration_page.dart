@@ -32,11 +32,12 @@ class _RegistrationPageState extends State<RegistrationPage> {
   late String _name;
   late String _email;
   late String _password;
-  late File _image;
+  File? _image;
+  final File defaultDP = File("lib/assets/defaultDP.jpeg");
 
   _RegistrationPageState() {
     _formKey = GlobalKey<FormState>();
-    _image = new File("assets/defaultDP.jpeg");
+    _image = defaultDP;
   }
 
   @override
@@ -113,7 +114,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
           mainAxisSize: MainAxisSize.max,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            // _imageSelectorWidget(),
+            _imageSelectorWidget(),
             _nameTextField(),
             _emailTextField(),
             _passwordTextField(),
@@ -128,9 +129,9 @@ class _RegistrationPageState extends State<RegistrationPage> {
       alignment: Alignment.center,
       child: GestureDetector(
         onTap: () async {
-          File _imageFile = MediaService.instance.getImageFromLibrary() as File;
+          var _imageFile = await MediaService.instance.getImageFromLibrary();
           setState(() {
-            _image = _imageFile;
+            _image = _imageFile != null ? File(_imageFile.path) : defaultDP;
           });
         },
         child: Container(
@@ -141,7 +142,9 @@ class _RegistrationPageState extends State<RegistrationPage> {
             borderRadius: BorderRadius.circular(500),
             image: DecorationImage(
               fit: BoxFit.cover,
-              image: FileImage(_image),
+              image: _image == defaultDP
+                  ? AssetImage(defaultDP.path)
+                  : FileImage(_image!) as ImageProvider,
             ),
           ),
         ),
@@ -229,8 +232,10 @@ class _RegistrationPageState extends State<RegistrationPage> {
                   _auth.registerUserWithEmailAndPassword(_email, _password,
                       (String _uid) async {
                     var _result = await CloudStorageService.instance
-                        .uploadUserImage(_uid, _image);
+                        .uploadUserImage(_uid, File(_image!.path));
                     var _imageURL = await _result.ref.getDownloadURL();
+                    print("Image path: " + _image!.path);
+                    print("Image URL: " + _imageURL);
                     await DBService.instance
                         .createUserInDB(_uid, _name, _email, _imageURL);
                   });

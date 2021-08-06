@@ -6,15 +6,10 @@ import '../models/message.dart';
 
 class DBService {
   static DBService instance = DBService();
+  static FirebaseFirestore _db = FirebaseFirestore.instance;
 
-  late FirebaseFirestore _db;
-
-  DBService() {
-    _db = FirebaseFirestore.instance;
-  }
-
-  String _userCollection = "Users";
-  String _conversationsCollection = "Conversations";
+  final String _userCollection = "Users";
+  final String _conversationsCollection = "Conversations";
 
   Future<void> createUserInDB(
       String _uid, String _name, String _email, String _imageURL) async {

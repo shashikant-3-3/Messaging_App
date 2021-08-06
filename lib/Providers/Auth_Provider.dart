@@ -19,28 +19,27 @@ class AuthProvider extends ChangeNotifier {
   late User user;
   AuthStatus status = AuthStatus.NotAuthenticated;
 
-  late FirebaseAuth _auth;
+  FirebaseAuth _auth = FirebaseAuth.instance;
 
   static AuthProvider instance = AuthProvider();
 
   AuthProvider() {
-    _auth = FirebaseAuth.instance;
-    _checkCurrentUserIsAuthenticated();
-    // status = AuthStatus.Authenticating;
-  }
-
-  void _autoLogin() async {
-    await DBService.instance.updateUserLastSeenTime(user.uid);
-    return NavigationService.instance.navigateToReplacement("home");
-  }
-
-  void _checkCurrentUserIsAuthenticated() async {
     user = _auth.currentUser!;
-    if (user != null) {
-      notifyListeners();
-      _autoLogin();
-    }
+    // _checkCurrentUserIsAuthenticated();
   }
+
+  // void _autoLogin() async {
+  //   await DBService.instance.updateUserLastSeenTime(user!.uid);
+  //   return NavigationService.instance.navigateToReplacement("home");
+  // }
+
+  // void _checkCurrentUserIsAuthenticated() async {
+  //   user = _auth.currentUser!;
+  //   // if (user != null) {
+  //   notifyListeners();
+  //   _autoLogin();
+  //   // }
+  // }
 
   void loginUserWithEmailAndPassword(String _email, String _password) async {
     status = AuthStatus.Authenticating;
@@ -48,7 +47,7 @@ class AuthProvider extends ChangeNotifier {
     try {
       UserCredential _result = await _auth.signInWithEmailAndPassword(
           email: _email, password: _password);
-      user = _result.user!;
+      user = _result.user as User;
       status = AuthStatus.Authenticated;
       SnackBarService.instance.showSnackBarSuccess("Welcome, ${user.email}");
       await DBService.instance.updateUserLastSeenTime(user.uid);
@@ -69,7 +68,7 @@ class AuthProvider extends ChangeNotifier {
     try {
       UserCredential _result = await _auth.createUserWithEmailAndPassword(
           email: _email, password: _password);
-      user = _result.user!;
+      user = _result.user as User;
       status = AuthStatus.Authenticated;
       await onSuccess(user.uid);
       SnackBarService.instance.showSnackBarSuccess("Welcome, ${user.email}");

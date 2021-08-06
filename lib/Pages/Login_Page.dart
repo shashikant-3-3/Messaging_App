@@ -26,7 +26,6 @@ class _LoginPageState extends State<LoginPage> {
   late String _password;
 
   _LoginPageState() {
-    // _auth = new AuthProvider();
     _formKey = GlobalKey<FormState>();
   }
 
